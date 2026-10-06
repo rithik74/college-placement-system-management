@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Register Company — College Placement</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    .reg-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 580px;
+      z-index: 10;
+    }
+    .portal-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      backdrop-filter: blur(10px);
+      transition: var(--transition);
+    }
+    .portal-back-link:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .btn-company {
+      background: var(--company-gradient);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+    }
+    .btn-company:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+    }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="login-page">
+  <div class="login-glow-bg" style="top: 10%; left: 15%; background: #f59e0b;"></div>
+  <div class="login-glow-bg" style="bottom: 10%; right: 15%; background: #ef4444;"></div>
+
+  <div class="reg-wrapper">
+    <a href="/company/login" class="portal-back-link">
+      <span>←</span> Back to Company Login
+    </a>
+
+    <div class="login-card" style="width: 100%; max-width: 580px; padding: 36px 34px;">
+      <div class="login-logo" style="background: var(--company-gradient); box-shadow: 0 10px 25px rgba(245, 158, 11, 0.35);">
+        🏢
+      </div>
+      <h1 class="login-title">Company Registration</h1>
+      <p class="login-sub">Partner with our college to recruit top campus talent</p>
+
+      <form id="form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name">Company Name *</label>
+            <input id="name" type="text" placeholder="e.g. Infosys Ltd" required/>
+          </div>
+          <div class="form-group">
+            <label for="email">Work Email *</label>
+            <input id="email" type="email" placeholder="recruitment@infosys.com" required/>
+          </div>
+          <div class="form-group">
+            <label for="password">Account Password *</label>
+            <input id="password" type="password" placeholder="Min. 6 characters" required minlength="6"/>
+          </div>
+          <div class="form-group">
+            <label for="industry">Industry / Sector</label>
+            <input id="industry" type="text" placeholder="e.g. Information Technology"/>
+          </div>
+          <div class="form-group">
+            <label for="location">Headquarters / Location</label>
+            <input id="location" type="text" placeholder="e.g. Bangalore, India"/>
+          </div>
+          <div class="form-group">
+            <label for="phone">Contact Phone</label>
+            <input id="phone" type="tel" placeholder="+91 98765 43210"/>
+          </div>
+          <div class="form-group form-full">
+            <label for="website">Company Website</label>
+            <input id="website" type="url" placeholder="https://www.example.com"/>
+          </div>
+        </div>
+
+        <button id="btn" type="submit" class="btn btn-company" style="width: 100%; padding: 12px; margin-top: 24px; font-size: 14px;">
+          <span>Register Recruiter Account</span>
+          <span style="font-size: 16px;">→</span>
+        </button>
+      </form>
+
+      <div style="margin-top: 20px; text-align: center; border-top: 1px solid var(--border); padding-top: 16px;">
+        <span style="font-size: 13px; color: var(--text-secondary);">
+          Already registered? <a href="/company/login" style="color: var(--warning); font-weight: 600;">Sign in here</a>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('btn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<span>Creating company account…</span>';
+  btn.disabled = true;
+
+  const body = {
+    name: document.getElementById('name').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    password: document.getElementById('password').value,
+    industry: document.getElementById('industry').value.trim(),
+    location: document.getElementById('location').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    website: document.getElementById('website').value.trim()
+  };
+
+  try {
+    await API.post('/api/auth/company/register', body);
+    toast('Account created successfully!', 'success');
+    setTimeout(() => window.location.href = '/company/dashboard', 600);
+  } catch(err) {
+    toast(err.message, 'error');
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

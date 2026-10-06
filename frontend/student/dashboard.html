@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Student Dashboard — CPMS</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    .student-hero-banner {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 182, 212, 0.15) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .hero-greeting {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .hero-subtext {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+    }
+    .hero-status-chip {
+      background: rgba(14, 21, 36, 0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      text-align: center;
+    }
+    .status-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--success);
+    }
+    .status-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 2px;
+    }
+    .announce-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      margin-bottom: 18px;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+    .announce-card:hover {
+      border-color: rgba(16, 185, 129, 0.4);
+      transform: translateY(-2px);
+    }
+    .announce-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .announce-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .announce-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    .meta-tags {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-light);
+      padding-top: 14px;
+    }
+    .meta-tag-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .opening-card {
+      background: rgba(14, 21, 36, 0.85);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: var(--transition);
+    }
+    .opening-card:hover {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(22, 32, 53, 0.95);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon" style="background: var(--student-gradient); box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);">👨‍🎓</div>
+      <div class="sidebar-logo-text">
+        <h2>CPMS Student</h2>
+        <span>Placement Portal</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Portal Menu</div>
+      <a href="javascript:void(0)" class="nav-item active" onclick="showTab('home')"><span class="icon">🏠</span><span>Home</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('announce')"><span class="icon">📢</span><span>Drive Announcements</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('browse')"><span class="icon">🔍</span><span>Browse Openings</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('myapps')"><span class="icon">📋</span><span>My Applications</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('profile')"><span class="icon">👤</span><span>My Profile</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="admin-info">
+        <div class="admin-avatar" style="background: var(--student-gradient);">S</div>
+        <div>
+          <div class="admin-name" id="user-name">Student Candidate</div>
+          <div class="admin-role">Campus Registered</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()">🚪 Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="topbar">
+      <div>
+        <h1 class="topbar-title" id="tab-heading">Student Portal</h1>
+        <div class="topbar-subtitle">Campus Recruitment Season 2025–26</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-chip">
+          <span class="live-dot"></span>
+          <span>Profile Verified</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Tab Segmented Bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="showTab('home')">🏠 Home</button>
+        <button class="tab-btn" onclick="showTab('announce')">📢 Announcements</button>
+        <button class="tab-btn" onclick="showTab('browse')">🔍 Browse Openings</button>
+        <button class="tab-btn" onclick="showTab('myapps')">📋 My Applications</button>
+        <button class="tab-btn" onclick="showTab('profile')">👤 Profile</button>
+      </div>
+
+      <!-- Tab: Home -->
+      <div class="tab-pane active" id="pane-home">
+        <div class="student-hero-banner">
+          <div>
+            <div class="hero-greeting" id="hero-name">Welcome Back, Student!</div>
+            <div class="hero-subtext">Stay updated on upcoming placement drives and apply to eligible company openings.</div>
+          </div>
+          <div class="hero-status-chip">
+            <div class="status-val" id="h-status">Checking…</div>
+            <div class="status-sub">Placement Status</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card blue">
+            <div class="stat-icon">📢</div>
+            <div>
+              <div class="stat-value" id="h-drives">—</div>
+              <div class="stat-label">Active Drives</div>
+            </div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-icon">📝</div>
+            <div>
+              <div class="stat-value" id="h-apps">—</div>
+              <div class="stat-label">Applied Roles</div>
+            </div>
+          </div>
+          <div class="stat-card orange">
+            <div class="stat-icon">⭐</div>
+            <div>
+              <div class="stat-value" id="h-short">—</div>
+              <div class="stat-label">Shortlisted Rounds</div>
+            </div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-icon">🎯</div>
+            <div>
+              <div class="stat-value" id="h-cgpa">—</div>
+              <div class="stat-label">Your CGPA</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-header">
+            <div class="card-title">Placement Guidelines &amp; Code of Conduct</div>
+          </div>
+          <div class="card-body">
+            <p style="color: var(--text-secondary); margin-bottom: 12px; font-size: 13.5px;">
+              Please review the following instructions to ensure a smooth recruitment process:
+            </p>
+            <ul style="color: var(--text-muted); font-size: 13px; line-height: 1.8; padding-left: 20px;">
+              <li>Ensure your CGPA in your profile matches your official academic transcripts.</li>
+              <li>Once shortlisted, attendance for all technical tests and interview rounds is mandatory.</li>
+              <li>Selected students will receive official confirmation letters via the college placement cell.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Drive Announcements -->
+      <div class="tab-pane" id="pane-announce">
+        <div class="card-header" style="background: none; border: none; padding: 0 0 16px;">
+          <div>
+            <h2 style="font-size: 18px; font-weight: 700;">Announced Placement Drives</h2>
+            <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">Official campus placement schedules from the placement office</div>
+          </div>
+        </div>
+        <div id="announce-list"></div>
+      </div>
+
+      <!-- Tab: Browse Openings -->
+      <div class="tab-pane" id="pane-browse">
+        <div class="card-header" style="background: none; border: none; padding: 0 0 16px;">
+          <div>
+            <h2 style="font-size: 18px; font-weight: 700;">Approved Job Openings for You</h2>
+            <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">Filtered automatically based on your CGPA and drive status</div>
+          </div>
+        </div>
+        <div id="drives-list"></div>
+      </div>
+
+      <!-- Tab: My Applications -->
+      <div class="tab-pane" id="pane-myapps">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Application Status Tracking</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Company</th>
+                  <th>Role</th>
+                  <th>Package</th>
+                  <th>Drive Title</th>
+                  <th>Drive Date</th>
+                  <th>Applied On</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="myapp-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Profile -->
+      <div class="tab-pane" id="pane-profile">
+        <div class="card" style="max-width: 600px;">
+          <div class="card-header">
+            <div class="card-title">Student Profile Details</div>
+            <button class="btn btn-primary btn-sm" onclick="saveProfile()">💾 Save Changes</button>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="p-name">Full Name</label>
+                <input id="p-name" type="text" placeholder="Full name"/>
+              </div>
+              <div class="form-group">
+                <label for="p-email">College Email (Locked)</label>
+                <input id="p-email" type="email" disabled style="opacity: 0.6; cursor: not-allowed;"/>
+              </div>
+              <div class="form-group">
+                <label for="p-dept">Department / Branch</label>
+                <input id="p-dept" type="text" placeholder="e.g. Computer Science"/>
+              </div>
+              <div class="form-group">
+                <label for="p-year">Year of Study</label>
+                <select id="p-year">
+                  <option value="">Select Year</option>
+                  <option value="1">1st Year</option>
+                  <option value="2">2nd Year</option>
+                  <option value="3">3rd Year</option>
+                  <option value="4">4th Year</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="p-cgpa">Cumulative CGPA</label>
+                <input id="p-cgpa" type="number" step="0.01" min="0" max="10" placeholder="e.g. 8.75"/>
+              </div>
+              <div class="form-group">
+                <label for="p-phone">Mobile Number</label>
+                <input id="p-phone" type="tel" placeholder="+91 9876543210"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+let myApps = [], myProfile = null;
+
+function showTab(t) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+
+  const pane = document.getElementById('pane-' + t);
+  if (pane) pane.classList.add('active');
+
+  const tabs = ['home', 'announce', 'browse', 'myapps', 'profile'];
+  const idx = tabs.indexOf(t);
+  if (idx !== -1) {
+    document.querySelectorAll('.tab-btn')[idx]?.classList.add('active');
+    document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
+  }
+
+  const headings = {
+    home: 'Student Dashboard',
+    announce: 'Drive Announcements',
+    browse: 'Eligible Job Openings',
+    myapps: 'Application Tracker',
+    profile: 'Student Profile'
+  };
+  const th = document.getElementById('tab-heading');
+  if (th) th.textContent = headings[t] || 'Dashboard';
+
+  loaders[t]?.();
+}
+
+const loaders = {
+  home:     loadHome,
+  announce: loadAnnouncements,
+  browse:   loadBrowse,
+  myapps:   loadMyApps,
+  profile:  loadProfile
+};
+
+async function loadHome() {
+  try {
+    const [appsData, prof, drives] = await Promise.all([
+      API.get('/api/student/applications'),
+      API.get('/api/student/profile'),
+      API.get('/api/student/announcements')
+    ]);
+    myApps = appsData;
+    myProfile = prof;
+
+    document.getElementById('h-drives').textContent = drives.filter(d => d.status === 'Open').length;
+    document.getElementById('h-apps').textContent = appsData.length;
+    document.getElementById('h-short').textContent = appsData.filter(a => a.status === 'Shortlisted').length;
+    document.getElementById('h-cgpa').textContent = prof.cgpa || '—';
+    document.getElementById('h-status').textContent = prof.is_placed ? 'Placed ✅' : 'Eligible 🟢';
+    document.getElementById('user-name').textContent = prof.name || 'Student';
+    const heroName = document.getElementById('hero-name');
+    if (heroName) heroName.textContent = `Welcome Back, ${prof.name || 'Student'}!`;
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+// ─── Drive Announcements ──────────────────────────────────────────────────────
+async function loadAnnouncements() {
+  try {
+    const drives = await API.get('/api/student/announcements');
+    const el = document.getElementById('announce-list');
+    if (!drives.length) {
+      el.innerHTML = `<div class="empty-state"><div class="empty-icon">📢</div><h3>No drives announced yet</h3><p>The college placement cell hasn't posted any active drives. Check back soon.</p></div>`;
+      return;
+    }
+    el.innerHTML = drives.map(d => `
+      <div class="announce-card">
+        <div class="announce-header">
+          <div>
+            <div class="announce-title">${d.drive_title}</div>
+            ${d.description ? `<div class="announce-desc">${d.description}</div>` : ''}
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            ${statusBadge(d.status)}
+            ${d.approved_openings > 0 ? `<span class="badge badge-purple">🏢 ${d.approved_openings} Approved Role${d.approved_openings > 1 ? 's' : ''}</span>` : ''}
+          </div>
+        </div>
+        <div class="meta-tags">
+          <div class="meta-tag-item"><span>📅</span><strong>Drive Date:</strong> ${fmtDate(d.drive_date)}</div>
+          ${d.last_date ? `<div class="meta-tag-item"><span>⏳</span><strong>Deadline:</strong> ${fmtDate(d.last_date)}</div>` : ''}
+          ${d.venue ? `<div class="meta-tag-item"><span>📍</span><strong>Venue:</strong> ${d.venue}</div>` : ''}
+        </div>
+        ${d.approved_openings > 0 ? `
+          <button class="btn btn-success btn-sm" style="margin-top:14px;" onclick="showTab('browse')">🔍 View Openings &amp; Apply →</button>
+        ` : `
+          <div style="margin-top:12px;font-size:12px;color:var(--text-muted);">
+            ⏳ Openings will appear as soon as companies submit packages and the college approves them.
+          </div>
+        `}
+      </div>
+    `).join('');
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+// ─── Browse Eligible Openings ────────────────────────────────────────────────
+async function loadBrowse() {
+  try {
+    const drives = await API.get('/api/student/drives');
+    const el = document.getElementById('drives-list');
+    if (!drives.length) {
+      el.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><h3>No eligible openings found</h3><p>Openings matching your CGPA will appear here once approved by the placement cell.</p></div>`;
+      return;
+    }
+
+    const byDrive = {};
+    drives.forEach(d => {
+      if (!byDrive[d.drive_id]) byDrive[d.drive_id] = { title: d.drive_title, date: d.drive_date, venue: d.venue, openings: [] };
+      byDrive[d.drive_id].openings.push(d);
+    });
+
+    el.innerHTML = Object.values(byDrive).map(drv => `
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">${drv.title}</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">📅 ${fmtDate(drv.date)} ${drv.venue ? `· 📍 ${drv.venue}` : ''}</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+            ${drv.openings.map(o => `
+              <div class="opening-card">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+                    <span class="badge badge-purple">${o.role}</span>
+                    ${o.already_applied ? '<span class="badge badge-green">Applied ✅</span>' : ''}
+                  </div>
+                  <div style="font-size:14px;font-weight:700;color:var(--text-primary);">🏢 ${o.company_name}</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${o.location || 'Pan-India'} ${o.industry ? `· ${o.industry}` : ''}</div>
+                  <div style="font-size:16px;color:var(--success);font-weight:800;margin-top:10px;">${fmtLPA(o.package)}</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Min CGPA: <strong>${o.min_cgpa}</strong> · Vacancies: <strong>${o.vacancies}</strong></div>
+                  ${o.role_desc ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:8px;line-height:1.4;">${o.role_desc}</div>` : ''}
+                </div>
+                ${!o.already_applied ? `
+                  <button class="btn btn-success btn-sm" style="margin-top:16px;width:100%;justify-content:center;" onclick="applyNow(${o.opening_id}, this)">
+                    Apply for this Role
+                  </button>
+                ` : `
+                  <div style="margin-top:16px;text-align:center;font-size:12px;color:var(--success);font-weight:600;">✓ Application Submitted</div>
+                `}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function applyNow(openingId, btn) {
+  const origText = btn.textContent;
+  btn.textContent = 'Submitting application…';
+  btn.disabled = true;
+  try {
+    await API.post(`/api/student/apply/${openingId}`);
+    toast('Application submitted successfully!', 'success');
+    loadBrowse();
+  } catch(err) {
+    toast(err.message, 'error');
+    btn.textContent = origText;
+    btn.disabled = false;
+  }
+}
+
+// ─── My Applications ─────────────────────────────────────────────────────────
+async function loadMyApps() {
+  myApps = await API.get('/api/student/applications').catch(() => []);
+  const tb = document.getElementById('myapp-body');
+  if (!myApps.length) {
+    tb.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div><h3>No applications yet</h3><p>Browse eligible openings to submit applications.</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = myApps.map((a, i) => `<tr>
+    <td>${i + 1}</td>
+    <td class="fw-600">${a.company_name}</td>
+    <td><span class="badge badge-purple">${a.role}</span></td>
+    <td style="color:var(--success);font-weight:700;">${fmtLPA(a.package)}</td>
+    <td style="font-size:12.5px;">${a.drive_title}</td>
+    <td style="font-size:12px;color:var(--text-muted);">${fmtDate(a.drive_date)}</td>
+    <td style="font-size:12px;color:var(--text-muted);">${fmtDate(a.applied_at)}</td>
+    <td>${statusBadge(a.status)}</td>
+  </tr>`).join('');
+}
+
+// ─── Profile ─────────────────────────────────────────────────────────────────
+async function loadProfile() {
+  try {
+    myProfile = await API.get('/api/student/profile');
+    document.getElementById('p-name').value = myProfile.name || '';
+    document.getElementById('p-email').value = myProfile.email || '';
+    document.getElementById('p-dept').value = myProfile.department || '';
+    document.getElementById('p-year').value = myProfile.year || '';
+    document.getElementById('p-cgpa').value = myProfile.cgpa || '';
+    document.getElementById('p-phone').value = myProfile.phone || '';
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function saveProfile() {
+  const body = {
+    name: document.getElementById('p-name').value.trim(),
+    department: document.getElementById('p-dept').value.trim(),
+    year: document.getElementById('p-year').value,
+    cgpa: document.getElementById('p-cgpa').value,
+    phone: document.getElementById('p-phone').value.trim()
+  };
+  try {
+    await API.put('/api/student/profile', body);
+    toast('Profile updated successfully!', 'success');
+    document.getElementById('user-name').textContent = body.name;
+    const heroName = document.getElementById('hero-name');
+    if (heroName) heroName.textContent = `Welcome Back, ${body.name}!`;
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+(async() => {
+  await requireRole('student');
+  loadHome();
+})();
+</script>
+</body>
+</html>

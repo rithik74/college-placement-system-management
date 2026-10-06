@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Corporate Recruiter Login — CPMS</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    .login-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 440px;
+      z-index: 10;
+    }
+    .portal-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      backdrop-filter: blur(10px);
+      transition: var(--transition);
+    }
+    .portal-back-link:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .btn-company {
+      background: var(--company-gradient);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+    }
+    .btn-company:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+    }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="login-page">
+  <div class="login-glow-bg" style="top: 15%; left: 20%; background: #f59e0b;"></div>
+  <div class="login-glow-bg" style="bottom: 15%; right: 20%; background: #ef4444;"></div>
+
+  <div class="login-wrapper">
+    <a href="/" class="portal-back-link">
+      <span>←</span> Back to Main Portal
+    </a>
+
+    <div class="login-card">
+      <div class="login-logo" style="background: var(--company-gradient); box-shadow: 0 10px 25px rgba(245, 158, 11, 0.35);">
+        🏢
+      </div>
+      <h1 class="login-title">Company Portal</h1>
+      <p class="login-sub">Sign in with your corporate recruiter account</p>
+
+      <form id="form">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="username">Username or Corporate Email</label>
+          <div class="input-with-icon">
+            <span class="input-icon">🏢</span>
+            <input id="username" type="text" placeholder="e.g. TCS@SRM or hr@company.com" required autofocus/>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label for="password">Password</label>
+          </div>
+          <div class="input-with-icon">
+            <span class="input-icon">🔒</span>
+            <input id="password" type="password" placeholder="Enter your password" required/>
+            <button type="button" class="pwd-toggle" id="toggle-pwd" title="Show/hide password">👁️</button>
+          </div>
+        </div>
+
+        <button id="btn" type="submit" class="btn btn-company" style="width: 100%; padding: 12px; font-size: 14px;">
+          <span>Login to Recruiter Portal</span>
+          <span style="font-size: 16px;">→</span>
+        </button>
+      </form>
+
+      <div style="margin-top: 24px; text-align: center; border-top: 1px solid var(--border); padding-top: 16px;">
+        <span style="font-size: 13px; color: var(--text-secondary);">
+          New recruiting partner? <a href="/company/register" style="color: var(--warning); font-weight: 600;">Register your company</a>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  // Password reveal toggle
+  const pwdToggle = document.getElementById('toggle-pwd');
+  const pwdInput = document.getElementById('password');
+  pwdToggle.addEventListener('click', () => {
+    const isPwd = pwdInput.type === 'password';
+    pwdInput.type = isPwd ? 'text' : 'password';
+    pwdToggle.textContent = isPwd ? '🙈' : '👁️';
+  });
+
+  document.getElementById('form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span>Authenticating…</span>';
+    btn.disabled = true;
+
+    try {
+      await API.post('/api/auth/company/login', {
+        username: document.getElementById('username').value.trim(),
+        password: document.getElementById('password').value
+      });
+      window.location.href = '/company/dashboard';
+    } catch(err) {
+      toast(err.message, 'error');
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

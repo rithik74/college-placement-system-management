@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Admin Portal — College Placement Management</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    .admin-login-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 440px;
+      z-index: 10;
+    }
+    .portal-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      backdrop-filter: blur(10px);
+      transition: var(--transition);
+    }
+    .portal-back-link:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="login-page">
+  <div class="login-glow-bg" style="top: 15%; left: 20%; background: #4f46e5;"></div>
+  <div class="login-glow-bg" style="bottom: 15%; right: 20%; background: #3b82f6;"></div>
+
+  <div class="admin-login-wrapper">
+    <a href="/" class="portal-back-link">
+      <span>←</span> Back to Main Portal
+    </a>
+
+    <div class="login-card">
+      <div class="login-logo" style="background: var(--admin-gradient); box-shadow: 0 10px 25px var(--accent-glow);">
+        🏛️
+      </div>
+      <h1 class="login-title">Placement Coordinator</h1>
+      <p class="login-sub">Sign in to manage drives, students &amp; corporate recruitment</p>
+
+      <form id="form">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="username">Admin Username</label>
+          <div class="input-with-icon">
+            <span class="input-icon">👤</span>
+            <input id="username" type="text" placeholder="Enter username" autocomplete="username" required autofocus/>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label for="password">Password</label>
+          </div>
+          <div class="input-with-icon">
+            <span class="input-icon">🔒</span>
+            <input id="password" type="password" placeholder="Enter password" autocomplete="current-password" required/>
+            <button type="button" class="pwd-toggle" id="toggle-pwd" title="Show/hide password">👁️</button>
+          </div>
+        </div>
+
+        <button id="btn" type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 14px;">
+          <span>Sign In to Dashboard</span>
+          <span style="font-size: 16px;">→</span>
+        </button>
+      </form>
+
+      <div style="margin-top: 24px; text-align: center; border-top: 1px solid var(--border); padding-top: 18px;">
+        <span style="font-size: 12px; color: var(--text-muted);">
+          Protected by Campus Security • Authorized Staff Only
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  // Password reveal toggle
+  const pwdToggle = document.getElementById('toggle-pwd');
+  const pwdInput = document.getElementById('password');
+  pwdToggle.addEventListener('click', () => {
+    const isPwd = pwdInput.type === 'password';
+    pwdInput.type = isPwd ? 'text' : 'password';
+    pwdToggle.textContent = isPwd ? '🙈' : '👁️';
+  });
+
+  document.getElementById('form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span>Verifying credentials…</span>';
+    btn.disabled = true;
+
+    try {
+      await API.post('/api/auth/admin/login', {
+        username: document.getElementById('username').value.trim(),
+        password: document.getElementById('password').value
+      });
+      window.location.href = '/admin/dashboard';
+    } catch(err) {
+      toast(err.message, 'error');
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

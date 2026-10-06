@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Admin Dashboard — CPMS</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    .search-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .search-input-group {
+      position: relative;
+      flex: 1;
+      min-width: 240px;
+    }
+    .search-input-group input {
+      width: 100%;
+      padding-left: 36px;
+    }
+    .search-input-group .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+    .overview-hero-card {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.25) 0%, rgba(59, 130, 246, 0.15) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .overview-hero-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .overview-hero-sub {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+    }
+    .placement-rate-box {
+      background: rgba(14, 21, 36, 0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      min-width: 200px;
+      text-align: center;
+    }
+    .rate-percentage {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--success);
+    }
+    .rate-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<!-- Student Modal -->
+<div class="modal-overlay" id="stu-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="stu-title">Add Student Profile</h2>
+      <button class="btn-close" onclick="closeModal('stu-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="stu-form">
+        <input type="hidden" id="stu-id"/>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="stu-name">Full Name *</label>
+            <input id="stu-name" type="text" placeholder="e.g. Aditi Rao" required/>
+          </div>
+          <div class="form-group">
+            <label for="stu-email">College Email *</label>
+            <input id="stu-email" type="email" placeholder="aditi@college.edu.in" required/>
+          </div>
+          <div class="form-group">
+            <label for="stu-dept">Department</label>
+            <input id="stu-dept" type="text" placeholder="e.g. Computer Science"/>
+          </div>
+          <div class="form-group">
+            <label for="stu-year">Year</label>
+            <select id="stu-year">
+              <option value="">Select Year</option>
+              <option value="1">1st Year</option>
+              <option value="2">2nd Year</option>
+              <option value="3">3rd Year</option>
+              <option value="4">4th Year</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="stu-cgpa">CGPA (0.00 – 10.00)</label>
+            <input id="stu-cgpa" type="number" step="0.01" min="0" max="10" placeholder="e.g. 8.85"/>
+          </div>
+          <div class="form-group">
+            <label for="stu-phone">Phone Number</label>
+            <input id="stu-phone" type="tel" placeholder="+91 9876543210"/>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('stu-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStu()">Save Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drive Modal -->
+<div class="modal-overlay" id="drv-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="drv-title">Create Placement Drive</h2>
+      <button class="btn-close" onclick="closeModal('drv-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="drv-form">
+        <input type="hidden" id="drv-id"/>
+        <div class="form-grid">
+          <div class="form-group form-full">
+            <label for="drv-title-in">Drive Title *</label>
+            <input id="drv-title-in" type="text" placeholder="e.g. TCS Pan-India Campus Drive 2026" required/>
+          </div>
+          <div class="form-group">
+            <label for="drv-date">Drive Date *</label>
+            <input id="drv-date" type="date" required/>
+          </div>
+          <div class="form-group">
+            <label for="drv-last">Last Date to Register</label>
+            <input id="drv-last" type="date"/>
+          </div>
+          <div class="form-group">
+            <label for="drv-venue">Venue / Location</label>
+            <input id="drv-venue" type="text" placeholder="e.g. Main Auditorium / Virtual"/>
+          </div>
+          <div class="form-group">
+            <label for="drv-status">Status</label>
+            <select id="drv-status">
+              <option value="Open">Open</option>
+              <option value="Closed">Closed</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="form-group form-full">
+            <label for="drv-desc">Drive Description &amp; Instructions</label>
+            <textarea id="drv-desc" placeholder="Details about registration requirements, rounds, schedule…"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('drv-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveDrv()">Save Drive</button>
+    </div>
+  </div>
+</div>
+
+<!-- Company Credentials Modal -->
+<div class="modal-overlay" id="cred-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="cred-modal-title">Create Company Login</h2>
+      <button class="btn-close" onclick="closeModal('cred-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="cred-form">
+        <input type="hidden" id="cred-id"/>
+        <div class="form-grid">
+          <div class="form-group form-full">
+            <label for="cred-name">Company Name *</label>
+            <input id="cred-name" type="text" placeholder="e.g. Tata Consultancy Services" required/>
+          </div>
+          <div class="form-group">
+            <label for="cred-email">Company Email *</label>
+            <input id="cred-email" type="email" placeholder="campus@tcs.com" required/>
+          </div>
+          <div class="form-group">
+            <label for="cred-industry">Industry</label>
+            <input id="cred-industry" type="text" placeholder="IT &amp; Consulting"/>
+          </div>
+          <div class="form-group">
+            <label for="cred-location">Location</label>
+            <input id="cred-location" type="text" placeholder="e.g. Mumbai, India"/>
+          </div>
+          <div class="form-group">
+            <label for="cred-phone">Contact Phone</label>
+            <input id="cred-phone" type="tel" placeholder="+91 9876543210"/>
+          </div>
+          <div class="form-group">
+            <label for="cred-website">Website</label>
+            <input id="cred-website" type="url" placeholder="https://tcs.com"/>
+          </div>
+          <div class="form-group" style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+            <label for="cred-username">Login Username *</label>
+            <input id="cred-username" type="text" placeholder="e.g. TCS@SRM" required/>
+            <small style="color:var(--text-muted);font-size:11px">Recruiter will use this to sign in</small>
+          </div>
+          <div class="form-group" style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+            <label id="cred-pwd-label" for="cred-password">Login Password *</label>
+            <input id="cred-password" type="password" placeholder="••••••••" required/>
+            <small id="cred-pwd-hint" style="color:var(--text-muted);font-size:11px"></small>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('cred-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCred()">Save Credentials</button>
+    </div>
+  </div>
+</div>
+
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🏛️</div>
+      <div class="sidebar-logo-text">
+        <h2>CPMS Admin</h2>
+        <span>Placement Office</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <div class="nav-section-label">Management</div>
+      <a href="javascript:void(0)" class="nav-item active" onclick="showTab('overview')"><span class="icon">📊</span><span>Dashboard</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('students')"><span class="icon">👨‍🎓</span><span>Students</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('drives')"><span class="icon">📅</span><span>Drives</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('openings')"><span class="icon">🏢</span><span>Company Openings</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('applications')"><span class="icon">📝</span><span>Applications</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('results')"><span class="icon">🏆</span><span>Results</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('credentials')"><span class="icon">🔑</span><span>Company Logins</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="admin-info">
+        <div class="admin-avatar">A</div>
+        <div>
+          <div class="admin-name" id="user-name">Coordinator</div>
+          <div class="admin-role">Placement Admin</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()">🚪 Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="topbar">
+      <div>
+        <h1 class="topbar-title" id="tab-heading">Dashboard Overview</h1>
+        <div class="topbar-subtitle" id="current-date">Campus Recruitment Season</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-chip">
+          <span class="live-dot"></span>
+          <span>System Online</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Tab Segmented Bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="showTab('overview')">📊 Overview</button>
+        <button class="tab-btn" onclick="showTab('students')">👨‍🎓 Students</button>
+        <button class="tab-btn" onclick="showTab('drives')">📅 Drives</button>
+        <button class="tab-btn" onclick="showTab('openings')">🏢 Openings</button>
+        <button class="tab-btn" onclick="showTab('applications')">📝 Applications</button>
+        <button class="tab-btn" onclick="showTab('results')">🏆 Results</button>
+        <button class="tab-btn" onclick="showTab('credentials')">🔑 Company Logins</button>
+      </div>
+
+      <!-- Tab: Overview -->
+      <div class="tab-pane active" id="pane-overview">
+        <div class="overview-hero-card">
+          <div>
+            <div class="overview-hero-title">Campus Placement Control Center</div>
+            <div class="overview-hero-sub">Monitor recruitment drives, verify job packages, and review candidate progress.</div>
+          </div>
+          <div class="placement-rate-box">
+            <div class="rate-percentage" id="placement-rate">0%</div>
+            <div class="rate-label">Placement Rate</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card blue">
+            <div class="stat-icon">👨‍🎓</div>
+            <div>
+              <div class="stat-value" id="d-stu">—</div>
+              <div class="stat-label">Total Students</div>
+            </div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-icon">✅</div>
+            <div>
+              <div class="stat-value" id="d-placed">—</div>
+              <div class="stat-label">Students Placed</div>
+            </div>
+          </div>
+          <div class="stat-card orange">
+            <div class="stat-icon">🏢</div>
+            <div>
+              <div class="stat-value" id="d-co">—</div>
+              <div class="stat-label">Partner Companies</div>
+            </div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-icon">📅</div>
+            <div>
+              <div class="stat-value" id="d-drv">—</div>
+              <div class="stat-label">Placement Drives</div>
+            </div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-icon">⏳</div>
+            <div>
+              <div class="stat-value" id="d-pend">—</div>
+              <div class="stat-label">Pending Openings</div>
+            </div>
+          </div>
+          <div class="stat-card teal">
+            <div class="stat-icon">📝</div>
+            <div>
+              <div class="stat-value" id="d-apps">—</div>
+              <div class="stat-label">Total Applications</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Students -->
+      <div class="tab-pane" id="pane-students">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Student Directory</div>
+            <button class="btn btn-primary" onclick="openStuModal()">➕ Add Student</button>
+          </div>
+          <div class="card-body" style="padding-bottom: 0;">
+            <div class="search-filter-bar">
+              <div class="search-input-group">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="stu-search" placeholder="Search student by name, email, department…" oninput="filterStudents()"/>
+              </div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Department</th>
+                  <th>Year</th>
+                  <th>CGPA</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="stu-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Drives -->
+      <div class="tab-pane" id="pane-drives">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Scheduled Placement Drives</div>
+            <button class="btn btn-primary" onclick="openDrvModal()">➕ Create Drive</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Title</th>
+                  <th>Drive Date</th>
+                  <th>Registration Deadline</th>
+                  <th>Venue</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="drv-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Openings -->
+      <div class="tab-pane" id="pane-openings">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Company Job Openings</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Review and approve job packages submitted by companies</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Company</th>
+                  <th>Drive</th>
+                  <th>Role</th>
+                  <th>Package Offered</th>
+                  <th>Min CGPA</th>
+                  <th>Status</th>
+                  <th>Decision Actions</th>
+                </tr>
+              </thead>
+              <tbody id="op-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Applications -->
+      <div class="tab-pane" id="pane-applications">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Student Job Applications</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Candidate applications across active drives</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Student Candidate</th>
+                  <th>CGPA</th>
+                  <th>Company</th>
+                  <th>Role Applied</th>
+                  <th>Drive</th>
+                  <th>Applied On</th>
+                  <th>Recruitment Status</th>
+                </tr>
+              </thead>
+              <tbody id="app-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Results -->
+      <div class="tab-pane" id="pane-results">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Placement Offers &amp; Final Results</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Selected candidates and placement packages</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Student</th>
+                  <th>Department</th>
+                  <th>Email</th>
+                  <th>Hired By</th>
+                  <th>Role</th>
+                  <th>Annual Package</th>
+                  <th>Drive</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody id="res-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Credentials -->
+      <div class="tab-pane" id="pane-credentials">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🔑 Company Login Credentials</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Manage portal accounts and credentials for recruiting companies</div>
+            </div>
+            <button class="btn btn-primary" onclick="openCredModal()">➕ Add Company Account</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Company Name</th>
+                  <th>Corporate Email</th>
+                  <th>Assigned Username</th>
+                  <th>Industry</th>
+                  <th>Location</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="cred-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+let students = [], drives = [], openings = [], applications = [], results = [], companyCreds = [];
+
+// Initialize live date in header
+const dateEl = document.getElementById('current-date');
+if (dateEl) {
+  dateEl.textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function showTab(t) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+
+  const pane = document.getElementById('pane-' + t);
+  if (pane) pane.classList.add('active');
+
+  const tabs = ['overview', 'students', 'drives', 'openings', 'applications', 'results', 'credentials'];
+  const idx = tabs.indexOf(t);
+  if (idx !== -1) {
+    document.querySelectorAll('.tab-btn')[idx]?.classList.add('active');
+    document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
+  }
+
+  const headings = {
+    overview: 'Dashboard Overview',
+    students: 'Student Directory',
+    drives: 'Placement Drives',
+    openings: 'Company Job Openings',
+    applications: 'Student Job Applications',
+    results: 'Placement Results',
+    credentials: 'Company Credentials'
+  };
+  const th = document.getElementById('tab-heading');
+  if (th) th.textContent = headings[t] || 'Dashboard';
+
+  loaders[t]?.();
+}
+
+const loaders = {
+  overview:     loadStats,
+  students:     loadStudents,
+  drives:       loadDrives,
+  openings:     loadOpenings,
+  applications: loadApplications,
+  results:      loadResults,
+  credentials:  loadCredentials,
+};
+
+async function loadStats() {
+  try {
+    const d = await API.get('/api/admin/stats');
+    document.getElementById('d-stu').textContent = d.students;
+    document.getElementById('d-placed').textContent = d.placed;
+    document.getElementById('d-co').textContent = d.companies;
+    document.getElementById('d-drv').textContent = d.drives;
+    document.getElementById('d-pend').textContent = d.pendingOpenings;
+    document.getElementById('d-apps').textContent = d.applications;
+
+    const rate = d.students > 0 ? Math.round((d.placed / d.students) * 100) : 0;
+    const rateEl = document.getElementById('placement-rate');
+    if (rateEl) rateEl.textContent = `${rate}%`;
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+// ─── Students ────────────────────────────────────────────────────────────────
+async function loadStudents() {
+  students = await API.get('/api/admin/students').catch(() => []);
+  renderStudentsTable(students);
+}
+
+function filterStudents() {
+  const q = document.getElementById('stu-search').value.toLowerCase().trim();
+  if (!q) return renderStudentsTable(students);
+  const filtered = students.filter(s =>
+    (s.name && s.name.toLowerCase().includes(q)) ||
+    (s.email && s.email.toLowerCase().includes(q)) ||
+    (s.department && s.department.toLowerCase().includes(q))
+  );
+  renderStudentsTable(filtered);
+}
+
+function renderStudentsTable(list) {
+  const tb = document.getElementById('stu-body');
+  if (!list.length) {
+    tb.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">👨‍🎓</div><h3>No students found</h3><p>Add new student records to manage candidate eligibility.</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = list.map((s, i) => `<tr>
+    <td>${i + 1}</td>
+    <td class="fw-600">${s.name}</td>
+    <td><span class="badge badge-blue">${s.department || '—'}</span></td>
+    <td>${s.year ? 'Year ' + s.year : '—'}</td>
+    <td style="color:${s.cgpa >= 7 ? 'var(--success)' : s.cgpa >= 5 ? 'var(--warning)' : 'var(--danger)'};font-weight:700">${s.cgpa || '—'}</td>
+    <td style="font-size:12.5px;color:var(--text-muted)">${s.email}</td>
+    <td>${s.is_placed ? '<span class="badge badge-green">Placed</span>' : '<span class="badge badge-gray">Seeking</span>'}</td>
+    <td><div style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" onclick="editStu(${s.student_id})" title="Edit">✏️ Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="delStu(${s.student_id},'${s.name.replace(/'/g, "\\'")}')" title="Delete">🗑️</button>
+    </div></td></tr>`).join('');
+}
+
+function openStuModal() {
+  document.getElementById('stu-title').textContent = 'Add Student Profile';
+  document.getElementById('stu-form').reset();
+  document.getElementById('stu-id').value = '';
+  openModal('stu-modal');
+}
+
+function editStu(id) {
+  const s = students.find(x => x.student_id === id);
+  if (!s) return;
+  document.getElementById('stu-title').textContent = 'Edit Student Profile';
+  document.getElementById('stu-id').value = s.student_id;
+  document.getElementById('stu-name').value = s.name;
+  document.getElementById('stu-email').value = s.email;
+  document.getElementById('stu-dept').value = s.department || '';
+  document.getElementById('stu-year').value = s.year || '';
+  document.getElementById('stu-cgpa').value = s.cgpa || '';
+  document.getElementById('stu-phone').value = s.phone || '';
+  openModal('stu-modal');
+}
+
+async function saveStu() {
+  const id = document.getElementById('stu-id').value;
+  const body = {
+    name: document.getElementById('stu-name').value.trim(),
+    email: document.getElementById('stu-email').value.trim(),
+    department: document.getElementById('stu-dept').value.trim(),
+    year: document.getElementById('stu-year').value,
+    cgpa: document.getElementById('stu-cgpa').value,
+    phone: document.getElementById('stu-phone').value.trim()
+  };
+  try {
+    if (id) {
+      await API.put(`/api/admin/students/${id}`, body);
+      toast('Student profile updated!', 'success');
+    } else {
+      const r = await API.post('/api/admin/students', body);
+      toast(`Student created! Default password: ${r.defaultPassword}`, 'success');
+    }
+    closeModal('stu-modal');
+    loadStudents();
+    loadStats();
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function delStu(id, name) {
+  if (!confirmAction(`Delete student "${name}"?`)) return;
+  try {
+    await API.delete(`/api/admin/students/${id}`);
+    toast('Student removed.', 'success');
+    loadStudents();
+    loadStats();
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+// ─── Drives ──────────────────────────────────────────────────────────────────
+async function loadDrives() {
+  drives = await API.get('/api/admin/drives').catch(() => []);
+  const tb = document.getElementById('drv-body');
+  if (!drives.length) {
+    tb.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📅</div><h3>No drives created yet</h3><p>Schedule a new campus placement drive to begin.</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = drives.map((d, i) => `<tr>
+    <td>${i + 1}</td>
+    <td class="fw-600">${d.drive_title}</td>
+    <td>${fmtDate(d.drive_date)}</td>
+    <td>${fmtDate(d.last_date)}</td>
+    <td style="color:var(--text-muted);font-size:12.5px">${d.venue || '—'}</td>
+    <td>${statusBadge(d.status)}</td>
+    <td><div style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" onclick="editDrv(${d.drive_id})">✏️ Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="delDrv(${d.drive_id},'${d.drive_title.replace(/'/g, "\\'")}')">🗑️</button>
+    </div></td></tr>`).join('');
+}
+
+function openDrvModal() {
+  document.getElementById('drv-title').textContent = 'Create Placement Drive';
+  document.getElementById('drv-form').reset();
+  document.getElementById('drv-id').value = '';
+  openModal('drv-modal');
+}
+
+function editDrv(id) {
+  const d = drives.find(x => x.drive_id === id);
+  if (!d) return;
+  document.getElementById('drv-title').textContent = 'Edit Drive Details';
+  document.getElementById('drv-id').value = d.drive_id;
+  document.getElementById('drv-title-in').value = d.drive_title;
+  document.getElementById('drv-date').value = d.drive_date?.split('T')[0] || '';
+  document.getElementById('drv-last').value = d.last_date?.split('T')[0] || '';
+  document.getElementById('drv-venue').value = d.venue || '';
+  document.getElementById('drv-status').value = d.status;
+  document.getElementById('drv-desc').value = d.description || '';
+  openModal('drv-modal');
+}
+
+async function saveDrv() {
+  const id = document.getElementById('drv-id').value;
+  const body = {
+    drive_title: document.getElementById('drv-title-in').value.trim(),
+    drive_date: document.getElementById('drv-date').value,
+    last_date: document.getElementById('drv-last').value || null,
+    venue: document.getElementById('drv-venue').value.trim(),
+    status: document.getElementById('drv-status').value,
+    description: document.getElementById('drv-desc').value.trim()
+  };
+  if (!body.drive_title || !body.drive_date) return toast('Drive title and date are required.', 'error');
+  try {
+    if (id) {
+      await API.put(`/api/admin/drives/${id}`, body);
+    } else {
+      await API.post('/api/admin/drives', body);
+    }
+    toast('Drive saved successfully!', 'success');
+    closeModal('drv-modal');
+    loadDrives();
+    loadStats();
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function delDrv(id, t) {
+  if (!confirmAction(`Delete drive "${t}"?`)) return;
+  try {
+    await API.delete(`/api/admin/drives/${id}`);
+    toast('Drive removed.', 'success');
+    loadDrives();
+    loadStats();
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+// ─── Openings ────────────────────────────────────────────────────────────────
+async function loadOpenings() {
+  openings = await API.get('/api/admin/openings').catch(() => []);
+  const tb = document.getElementById('op-body');
+  if (!openings.length) {
+    tb.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🏢</div><h3>No openings submitted</h3><p>Recruiters will submit job openings under scheduled drives.</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = openings.map((o, i) => `<tr>
+    <td>${i + 1}</td>
+    <td class="fw-600">${o.company_name}</td>
+    <td style="font-size:12.5px">${o.drive_title}</td>
+    <td><span class="badge badge-purple">${o.role}</span></td>
+    <td style="color:var(--success);font-weight:700">${fmtLPA(o.package)}</td>
+    <td style="font-weight:700">${o.min_cgpa}</td>
+    <td>${statusBadge(o.status)}</td>
+    <td><div style="display:flex;gap:6px">
+      ${o.status === 'Pending' ? `
+        <button class="btn btn-success btn-sm" onclick="reviewOp(${o.opening_id},'Approved')">✅ Approve</button>
+        <button class="btn btn-danger btn-sm" onclick="reviewOp(${o.opening_id},'Rejected')">❌ Reject</button>
+      ` : '<span style="color:var(--text-muted);font-size:12px">Reviewed</span>'}
+    </div></td></tr>`).join('');
+}
+
+async function reviewOp(id, status) {
+  try {
+    await API.put(`/api/admin/openings/${id}/status`, { status });
+    toast(`Opening ${status}!`, status === 'Approved' ? 'success' : 'info');
+    loadOpenings();
+    loadStats();
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+// ─── Applications ────────────────────────────────────────────────────────────
+async function loadApplications() {
+  applications = await API.get('/api/admin/applications').catch(() => []);
+  const tb = document.getElementById('app-body');
+  if (!applications.length) {
+    tb.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📝</div><h3>No student applications</h3><p>Applications will appear as eligible students apply.</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = applications.map((a, i) => `<tr>
+    <td>${i + 1}</td>
+    <td class="fw-600">${a.student_name}<div style="font-size:11px;color:var(--text-muted)">${a.department || ''}</div></td>
+    <td style="font-weight:700;color:${a.cgpa >= 7 ? 'var(--success)' : 'var(--warning)'}">${a.cgpa}</td>
+    <td class="fw-600">${a.company_name}</td>
+    <td><span class="badge badge-purple">${a.role}</span></td>
+    <td style="font-size:12.5px">${a.drive_title}</td>
+    <td style="font-size:12px;color:var(--text-muted)">${fmtDate(a.applied_at)}</td>
+    <td>${statusBadge(a.status)}</td>
+  </tr>`).join('');
+}
+
+// ─── Results ─────────────────────────────────────────────────────────────────
+async function loadResults() {
+  results = await API.get('/api/admin/results').catch(() => []);
+  const tb = document.getElementById('res-body');
+  if (!results.length) {
+    tb.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🏆</div><h3>No results recorded yet</h3><p>Companies will select or shortlist candidates during interview rounds.</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = results.map((r, i) => `<tr>
+    <td>${i + 1}</td>
+    <td class="fw-600">${r.student_name}</td>
+    <td><span class="badge badge-blue">${r.department || '—'}</span></td>
+    <td style="font-size:12px;color:var(--text-muted)">${r.email}</td>
+    <td class="fw-600">${r.company_name}</td>
+    <td><span class="badge badge-purple">${r.role}</span></td>
+    <td style="color:var(--success);font-weight:800">${fmtLPA(r.package)}</td>
+    <td style="font-size:12px">${r.drive_title}</td>
+    <td>${r.status === 'Selected' ? '<span class="badge badge-green">✅ Selected</span>' : '<span class="badge badge-red">❌ Rejected</span>'}</td>
+  </tr>`).join('');
+}
+
+// ─── Company Credentials ─────────────────────────────────────────────────────
+async function loadCredentials() {
+  companyCreds = await API.get('/api/admin/company-credentials').catch(() => []);
+  const tb = document.getElementById('cred-body');
+  if (!companyCreds.length) {
+    tb.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🔑</div><h3>No companies registered</h3><p>Create credentials for recruiting partners so they can sign in.</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = companyCreds.map((c, i) => `<tr>
+    <td>${i + 1}</td>
+    <td class="fw-600">${c.name}</td>
+    <td style="font-size:12px;color:var(--text-muted)">${c.email}</td>
+    <td><span class="badge badge-blue" style="font-family:monospace;letter-spacing:.5px">${c.username || '<span style="color:var(--danger)">Not set</span>'}</span></td>
+    <td><span class="badge badge-gray">${c.industry || '—'}</span></td>
+    <td style="font-size:12px;color:var(--text-muted)">${c.location || '—'}</td>
+    <td><div style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" onclick="editCred(${c.company_id})">✏️ Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="delCred(${c.company_id},'${c.name.replace(/'/g, "\\'")}')">🗑️</button>
+    </div></td></tr>`).join('');
+}
+
+function openCredModal() {
+  document.getElementById('cred-modal-title').textContent = 'Create Company Login';
+  document.getElementById('cred-form').reset();
+  document.getElementById('cred-id').value = '';
+  document.getElementById('cred-password').required = true;
+  document.getElementById('cred-pwd-label').textContent = 'Login Password *';
+  document.getElementById('cred-pwd-hint').textContent = '';
+  openModal('cred-modal');
+}
+
+function editCred(id) {
+  const c = companyCreds.find(x => x.company_id === id);
+  if (!c) return;
+  document.getElementById('cred-modal-title').textContent = 'Edit Company Credentials';
+  document.getElementById('cred-id').value = c.company_id;
+  document.getElementById('cred-name').value = c.name;
+  document.getElementById('cred-email').value = c.email;
+  document.getElementById('cred-username').value = c.username || '';
+  document.getElementById('cred-industry').value = c.industry || '';
+  document.getElementById('cred-location').value = c.location || '';
+  document.getElementById('cred-phone').value = c.phone || '';
+  document.getElementById('cred-website').value = c.website || '';
+  document.getElementById('cred-password').value = '';
+  document.getElementById('cred-password').required = false;
+  document.getElementById('cred-pwd-label').textContent = 'New Password (optional)';
+  document.getElementById('cred-pwd-hint').textContent = 'Leave empty to keep existing password.';
+  openModal('cred-modal');
+}
+
+async function saveCred() {
+  const id = document.getElementById('cred-id').value;
+  const body = {
+    name: document.getElementById('cred-name').value.trim(),
+    email: document.getElementById('cred-email').value.trim(),
+    username: document.getElementById('cred-username').value.trim(),
+    password: document.getElementById('cred-password').value,
+    industry: document.getElementById('cred-industry').value.trim(),
+    location: document.getElementById('cred-location').value.trim(),
+    phone: document.getElementById('cred-phone').value.trim(),
+    website: document.getElementById('cred-website').value.trim(),
+  };
+  if (!body.name || !body.email || !body.username) return toast('Company name, email and username are required.', 'error');
+  if (!id && !body.password) return toast('Password is required when creating a company login.', 'error');
+
+  try {
+    if (id) {
+      await API.put(`/api/admin/company-credentials/${id}`, body);
+      toast('Credentials updated!', 'success');
+    } else {
+      await API.post('/api/admin/company-credentials', body);
+      toast('Company login created successfully!', 'success');
+    }
+    closeModal('cred-modal');
+    loadCredentials();
+    loadStats();
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function delCred(id, name) {
+  if (!confirmAction(`Delete company "${name}" and all their associated records?`)) return;
+  try {
+    await API.delete(`/api/admin/company-credentials/${id}`);
+    toast('Company deleted.', 'success');
+    loadCredentials();
+    loadStats();
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+(async() => {
+  await requireRole('admin');
+  loadStats();
+})();
+</script>
+</body>
+</html>

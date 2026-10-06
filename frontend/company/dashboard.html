@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Company Recruiter Portal — CPMS</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    .recruiter-hero {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(239, 68, 68, 0.15) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .drive-row {
+      background: rgba(14, 21, 36, 0.85);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      transition: var(--transition);
+    }
+    .drive-row:hover {
+      border-color: rgba(245, 158, 11, 0.4);
+      transform: translateY(-2px);
+    }
+    .btn-company {
+      background: var(--company-gradient);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+    }
+    .btn-company:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+    }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<!-- Post Opening Modal -->
+<div class="modal-overlay" id="post-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="post-modal-title">Post Job Role Opening</h2>
+      <button class="btn-close" onclick="closeModal('post-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="post-form">
+        <input type="hidden" id="post-id"/>
+        <div class="form-grid">
+          <div class="form-group form-full">
+            <label for="post-drive">Placement Drive</label>
+            <select id="post-drive" disabled style="opacity: 0.8;"></select>
+          </div>
+          <div class="form-group">
+            <label for="post-role">Job Role / Designation *</label>
+            <input id="post-role" type="text" placeholder="e.g. Graduate Software Engineer" required/>
+          </div>
+          <div class="form-group">
+            <label for="post-pkg">Annual CTC (LPA) *</label>
+            <input id="post-pkg" type="number" step="0.1" min="1" placeholder="e.g. 8.5" required/>
+          </div>
+          <div class="form-group">
+            <label for="post-cgpa">Minimum Cutoff CGPA *</label>
+            <input id="post-cgpa" type="number" step="0.01" min="0" max="10" placeholder="e.g. 7.50" required/>
+          </div>
+          <div class="form-group">
+            <label for="post-vac">Number of Vacancies</label>
+            <input id="post-vac" type="number" min="1" value="1"/>
+          </div>
+          <div class="form-group form-full">
+            <label for="post-desc">Job Description &amp; Candidate Requirements</label>
+            <textarea id="post-desc" placeholder="Describe key responsibilities, required technical skills, probation details…"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('post-modal')">Cancel</button>
+      <button class="btn btn-company" onclick="saveOpening()">Submit to Placement Cell</button>
+    </div>
+  </div>
+</div>
+
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon" style="background: var(--company-gradient); box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);">🏢</div>
+      <div class="sidebar-logo-text">
+        <h2>CPMS Recruiter</h2>
+        <span>Corporate Portal</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Recruiter Menu</div>
+      <a href="javascript:void(0)" class="nav-item active" onclick="showTab('home')"><span class="icon">🏠</span><span>Overview</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('post')"><span class="icon">📅</span><span>Post Opening</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('openings')"><span class="icon">📤</span><span>My Openings</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('apps')"><span class="icon">📋</span><span>Applications</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('results')"><span class="icon">🏆</span><span>Results</span></a>
+      <a href="javascript:void(0)" class="nav-item" onclick="showTab('profile')"><span class="icon">👤</span><span>Company Profile</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="admin-info">
+        <div class="admin-avatar" style="background: var(--company-gradient);">C</div>
+        <div>
+          <div class="admin-name" id="user-name">Company Partner</div>
+          <div class="admin-role">Corporate Recruiter</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()">🚪 Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="topbar">
+      <div>
+        <h1 class="topbar-title" id="tab-heading">Recruiter Dashboard</h1>
+        <div class="topbar-subtitle">Campus Recruitment Management</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-chip">
+          <span class="live-dot" style="background: var(--warning); box-shadow: 0 0 8px var(--warning);"></span>
+          <span>Corporate Session Active</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Tab Segmented Bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="showTab('home')">🏠 Overview</button>
+        <button class="tab-btn" onclick="showTab('post')">📅 Post Opening</button>
+        <button class="tab-btn" onclick="showTab('openings')">📤 My Openings</button>
+        <button class="tab-btn" onclick="showTab('apps')">📋 Applications</button>
+        <button class="tab-btn" onclick="showTab('results')">🏆 Results</button>
+        <button class="tab-btn" onclick="showTab('profile')">👤 Company Profile</button>
+      </div>
+
+      <!-- Tab: Home -->
+      <div class="tab-pane active" id="pane-home">
+        <div class="recruiter-hero">
+          <div>
+            <div style="font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px;" id="hero-comp-name">Welcome, Corporate Partner</div>
+            <div style="font-size: 13.5px; color: var(--text-secondary);">Manage your campus recruitment pipeline, evaluate student applicants, and extend offers.</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card orange">
+            <div class="stat-icon">📤</div>
+            <div>
+              <div class="stat-value" id="h-open">—</div>
+              <div class="stat-label">Total Openings</div>
+            </div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-icon">✅</div>
+            <div>
+              <div class="stat-value" id="h-appr">—</div>
+              <div class="stat-label">Approved Openings</div>
+            </div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-icon">📝</div>
+            <div>
+              <div class="stat-value" id="h-apps">—</div>
+              <div class="stat-label">Applicants Received</div>
+            </div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-icon">⭐</div>
+            <div>
+              <div class="stat-value" id="h-short">—</div>
+              <div class="stat-label">Shortlisted Candidates</div>
+            </div>
+          </div>
+          <div class="stat-card teal">
+            <div class="stat-icon">🎉</div>
+            <div>
+              <div class="stat-value" id="h-selected">—</div>
+              <div class="stat-label">Selected Offers</div>
+            </div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-icon">❌</div>
+            <div>
+              <div class="stat-value" id="h-rejected">—</div>
+              <div class="stat-label">Rejected Candidates</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-header">
+            <div class="card-title">Recruitment Workflow Guide</div>
+          </div>
+          <div class="card-body">
+            <ol style="color: var(--text-secondary); line-height: 1.8; font-size: 13.5px; padding-left: 20px;">
+              <li>Navigate to <strong>Post Opening</strong> to view all active placement drives scheduled by the college.</li>
+              <li>Select a drive and provide role details, package (LPA), minimum CGPA cutoff, and vacancies.</li>
+              <li>Once the placement coordinator approves your opening, eligible students can submit applications.</li>
+              <li>Review student resumes under <strong>Applications</strong> and move candidates through <em>Shortlisted</em>, <em>Selected</em>, or <em>Rejected</em> states.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Post Opening -->
+      <div class="tab-pane" id="pane-post">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Available Placement Drives</div>
+            <span class="badge badge-green">Click "Post Opening" on a drive to submit roles</span>
+          </div>
+          <div class="card-body">
+            <div id="drives-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: My Openings -->
+      <div class="tab-pane" id="pane-openings">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Submitted Job Openings</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Drive Title</th>
+                  <th>Job Role</th>
+                  <th>Package</th>
+                  <th>Min CGPA</th>
+                  <th>Vacancies</th>
+                  <th>Applicants</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="op-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Applications -->
+      <div class="tab-pane" id="pane-apps">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Candidate Applications Received</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Evaluate applicant credentials and update hiring decisions</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Candidate</th>
+                  <th>Department</th>
+                  <th>CGPA</th>
+                  <th>Phone</th>
+                  <th>Role Applied</th>
+                  <th>Drive</th>
+                  <th>Applied On</th>
+                  <th>Status</th>
+                  <th>Recruiter Decision</th>
+                </tr>
+              </thead>
+              <tbody id="app-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Results -->
+      <div class="tab-pane" id="pane-results">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Selected Candidates &amp; Final Decisions</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Permanent record of offers extended by your company</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Candidate</th>
+                  <th>Department</th>
+                  <th>CGPA</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Package</th>
+                  <th>Drive</th>
+                  <th>Decision</th>
+                  <th>Remarks</th>
+                </tr>
+              </thead>
+              <tbody id="result-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Profile -->
+      <div class="tab-pane" id="pane-profile">
+        <div class="card" style="max-width: 600px;">
+          <div class="card-header">
+            <div class="card-title">Corporate Profile</div>
+            <button class="btn btn-company btn-sm" onclick="saveProfile()">💾 Save Changes</button>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="cp-name">Company Name</label>
+                <input id="cp-name" type="text"/>
+              </div>
+              <div class="form-group">
+                <label for="cp-email">Registered Email (Locked)</label>
+                <input id="cp-email" type="email" disabled style="opacity: 0.6; cursor: not-allowed;"/>
+              </div>
+              <div class="form-group">
+                <label for="cp-ind">Industry Sector</label>
+                <input id="cp-ind" type="text"/>
+              </div>
+              <div class="form-group">
+                <label for="cp-loc">Headquarters Location</label>
+                <input id="cp-loc" type="text"/>
+              </div>
+              <div class="form-group">
+                <label for="cp-ph">Contact Phone</label>
+                <input id="cp-ph" type="tel"/>
+              </div>
+              <div class="form-group">
+                <label for="cp-web">Company Website</label>
+                <input id="cp-web" type="url"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+let myOpenings = [], myApps = [], myResults = [], drives = [];
+
+function showTab(t) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+
+  const pane = document.getElementById('pane-' + t);
+  if (pane) pane.classList.add('active');
+
+  const tabs = ['home', 'post', 'openings', 'apps', 'results', 'profile'];
+  const idx = tabs.indexOf(t);
+  if (idx !== -1) {
+    document.querySelectorAll('.tab-btn')[idx]?.classList.add('active');
+    document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
+  }
+
+  const headings = {
+    home: 'Recruiter Overview',
+    post: 'Post Job Opening',
+    openings: 'Submitted Openings',
+    apps: 'Review Applications',
+    results: 'Candidate Results',
+    profile: 'Company Profile'
+  };
+  const th = document.getElementById('tab-heading');
+  if (th) th.textContent = headings[t] || 'Dashboard';
+
+  loaders[t]?.();
+}
+
+const loaders = {
+  home:     loadHome,
+  post:     loadDrives,
+  openings: loadOpenings,
+  apps:     loadApplications,
+  results:  loadResults,
+  profile:  loadProfile
+};
+
+async function loadHome() {
+  try {
+    const [ops, apps] = await Promise.all([
+      API.get('/api/company/openings'),
+      API.get('/api/company/applications')
+    ]);
+    document.getElementById('h-open').textContent = ops.length;
+    document.getElementById('h-appr').textContent = ops.filter(o => o.status === 'Approved').length;
+    document.getElementById('h-apps').textContent = apps.length;
+    document.getElementById('h-short').textContent = apps.filter(a => a.status === 'Shortlisted').length;
+    document.getElementById('h-selected').textContent = apps.filter(a => a.status === 'Selected').length;
+    document.getElementById('h-rejected').textContent = apps.filter(a => a.status === 'Rejected').length;
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function loadDrives() {
+  drives = await API.get('/api/company/drives').catch(() => []);
+  const el = document.getElementById('drives-list');
+  if (!drives.length) {
+    el.innerHTML = `<div class="empty-state" style="padding:40px;"><div class="empty-icon">📅</div><h3>No open placement drives</h3><p>The college hasn't scheduled any open drives yet.</p></div>`;
+    return;
+  }
+  el.innerHTML = drives.map(d => `
+    <div class="drive-row">
+      <div>
+        <div class="fw-600" style="font-size:16px;">${d.drive_title}</div>
+        <div style="font-size:12.5px;color:var(--text-muted);margin-top:4px;">
+          📅 <strong>Date:</strong> ${fmtDate(d.drive_date)} ${d.venue ? `· 📍 ${d.venue}` : ''} ${d.last_date ? `· ⏳ Deadline: ${fmtDate(d.last_date)}` : ''}
+        </div>
+        ${d.description ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:6px;">${d.description}</div>` : ''}
+      </div>
+      <button class="btn btn-company btn-sm" onclick="openPostModal(${d.drive_id},'${d.drive_title.replace(/'/g, "\\'")}')">
+        📤 Post Opening for this Drive
+      </button>
+    </div>
+  `).join('');
+}
+
+function openPostModal(driveId, driveName) {
+  document.getElementById('post-modal-title').textContent = `Post Opening: ${driveName}`;
+  document.getElementById('post-form').reset();
+  document.getElementById('post-id').value = '';
+  document.getElementById('post-vac').value = 1;
+  document.getElementById('post-drive').innerHTML = `<option value="${driveId}" selected>${driveName}</option>`;
+  openModal('post-modal');
+}
+
+async function saveOpening() {
+  const id = document.getElementById('post-id').value;
+  const body = {
+    drive_id: document.getElementById('post-drive').value,
+    role: document.getElementById('post-role').value.trim(),
+    package: parseFloat(document.getElementById('post-pkg').value),
+    min_cgpa: parseFloat(document.getElementById('post-cgpa').value),
+    vacancies: parseInt(document.getElementById('post-vac').value) || 1,
+    description: document.getElementById('post-desc').value.trim()
+  };
+  if (!body.drive_id || !body.role || isNaN(body.package) || isNaN(body.min_cgpa)) {
+    return toast('Please fill in role, package and min CGPA.', 'error');
+  }
+
+  try {
+    if (id) {
+      await API.put(`/api/company/openings/${id}`, body);
+      toast('Opening updated successfully!', 'success');
+    } else {
+      await API.post('/api/company/openings', body);
+      toast('Opening submitted! Awaiting college approval.', 'success');
+    }
+    closeModal('post-modal');
+    loadOpenings();
+    loadHome();
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function loadOpenings() {
+  myOpenings = await API.get('/api/company/openings').catch(() => []);
+  const tb = document.getElementById('op-body');
+  if (!myOpenings.length) {
+    tb.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📤</div><h3>No openings submitted</h3><p>Post a role requirements package under active drives.</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = myOpenings.map((o, i) => `<tr>
+    <td>${i + 1}</td>
+    <td style="font-size:12.5px;">${o.drive_title}<div style="color:var(--text-muted);font-size:11px;">${fmtDate(o.drive_date)}</div></td>
+    <td><span class="badge badge-purple">${o.role}</span></td>
+    <td style="color:var(--success);font-weight:700;">${fmtLPA(o.package)}</td>
+    <td style="font-weight:700;">${o.min_cgpa}</td>
+    <td>${o.vacancies}</td>
+    <td><span class="badge badge-blue">${o.applicant_count}</span></td>
+    <td>${statusBadge(o.status)}</td>
+    <td><div style="display:flex;gap:6px;">
+      ${o.status === 'Pending' ? `
+        <button class="btn btn-ghost btn-sm" onclick="editOpening(${o.opening_id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="delOpening(${o.opening_id})">🗑️</button>
+      ` : '<span style="font-size:11px;color:var(--text-muted);">Locked</span>'}
+    </div></td></tr>`).join('');
+}
+
+function editOpening(id) {
+  const o = myOpenings.find(x => x.opening_id === id);
+  if (!o) return;
+  document.getElementById('post-modal-title').textContent = 'Edit Opening';
+  document.getElementById('post-id').value = o.opening_id;
+  document.getElementById('post-drive').innerHTML = `<option value="${o.drive_id}" selected>${o.drive_title}</option>`;
+  document.getElementById('post-role').value = o.role;
+  document.getElementById('post-pkg').value = o.package;
+  document.getElementById('post-cgpa').value = o.min_cgpa;
+  document.getElementById('post-vac').value = o.vacancies;
+  document.getElementById('post-desc').value = o.description || '';
+  openModal('post-modal');
+}
+
+async function delOpening(id) {
+  if (!confirmAction('Delete this opening?')) return;
+  try {
+    await API.delete(`/api/company/openings/${id}`);
+    toast('Opening removed.', 'success');
+    loadOpenings();
+    loadHome();
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function loadApplications() {
+  myApps = await API.get('/api/company/applications').catch(() => []);
+  const tb = document.getElementById('app-body');
+  if (!myApps.length) {
+    tb.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📋</div><h3>No applications received</h3><p>Candidates will apply once your openings are approved.</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = myApps.map((a, i) => `<tr>
+    <td>${i + 1}</td>
+    <td class="fw-600">${a.student_name}<div style="font-size:11px;color:var(--text-muted);">${a.student_email}</div></td>
+    <td><span class="badge badge-blue">${a.department || '—'}</span></td>
+    <td style="font-weight:700;color:${a.cgpa >= 7 ? 'var(--success)' : 'var(--warning)'};">${a.cgpa}</td>
+    <td style="font-size:12px;color:var(--text-muted);">${a.phone || '—'}</td>
+    <td><span class="badge badge-purple">${a.role}</span></td>
+    <td style="font-size:12.5px;">${a.drive_title}</td>
+    <td style="font-size:12px;color:var(--text-muted);">${fmtDate(a.applied_at)}</td>
+    <td>${statusBadge(a.status)}</td>
+    <td><div style="display:flex;gap:6px;flex-wrap:wrap;">
+      ${a.status === 'Selected' || a.status === 'Rejected' ? `
+        <span style="font-size:11px;color:var(--text-muted);">Finalized</span>
+      ` : `
+        ${a.status === 'Applied' ? `<button class="btn btn-warning btn-sm" onclick="updateApp(${a.application_id},'Shortlisted')">⭐ Shortlist</button>` : ''}
+        <button class="btn btn-success btn-sm" onclick="updateApp(${a.application_id},'Selected')">🎉 Select</button>
+        <button class="btn btn-danger btn-sm" onclick="updateApp(${a.application_id},'Rejected')">❌ Reject</button>
+      `}
+    </div></td></tr>`).join('');
+}
+
+async function updateApp(id, status) {
+  try {
+    await API.put(`/api/company/applications/${id}`, { status });
+    toast(`Candidate marked as ${status}!`, status === 'Selected' ? 'success' : status === 'Shortlisted' ? 'info' : 'error');
+    loadApplications();
+    loadHome();
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function loadResults() {
+  myResults = await API.get('/api/company/results').catch(() => []);
+  const tb = document.getElementById('result-body');
+  if (!myResults.length) {
+    tb.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">🏆</div><h3>No final offers yet</h3><p>Mark candidates as Selected in the Applications tab to issue offers.</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = myResults.map((r, i) => `<tr>
+    <td>${i + 1}</td>
+    <td class="fw-600">${r.student_name}</td>
+    <td><span class="badge badge-blue">${r.department || '—'}</span></td>
+    <td style="font-weight:700;color:${r.cgpa >= 7 ? 'var(--success)' : 'var(--warning)'};">${r.cgpa}</td>
+    <td style="font-size:12px;color:var(--text-muted);">${r.student_email}</td>
+    <td><span class="badge badge-purple">${r.role}</span></td>
+    <td style="color:var(--success);font-weight:800;">${fmtLPA(r.package)}</td>
+    <td style="font-size:12.5px;">${r.drive_title}</td>
+    <td>${r.status === 'Selected' ? '<span class="badge badge-green">✅ Selected</span>' : '<span class="badge badge-red">❌ Rejected</span>'}</td>
+    <td style="font-size:12px;color:var(--text-muted);">${r.remarks || '—'}</td>
+  </tr>`).join('');
+}
+
+async function loadProfile() {
+  try {
+    const p = await API.get('/api/company/profile');
+    document.getElementById('cp-name').value = p.name || '';
+    document.getElementById('cp-email').value = p.email || '';
+    document.getElementById('cp-ind').value = p.industry || '';
+    document.getElementById('cp-loc').value = p.location || '';
+    document.getElementById('cp-ph').value = p.phone || '';
+    document.getElementById('cp-web').value = p.website || '';
+    document.getElementById('user-name').textContent = p.name || 'Company';
+    const compHero = document.getElementById('hero-comp-name');
+    if (compHero) compHero.textContent = `Welcome, ${p.name || 'Corporate Partner'}`;
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function saveProfile() {
+  const body = {
+    name: document.getElementById('cp-name').value.trim(),
+    industry: document.getElementById('cp-ind').value.trim(),
+    location: document.getElementById('cp-loc').value.trim(),
+    phone: document.getElementById('cp-ph').value.trim(),
+    website: document.getElementById('cp-web').value.trim()
+  };
+  try {
+    await API.put('/api/company/profile', body);
+    toast('Profile updated successfully!', 'success');
+    document.getElementById('user-name').textContent = body.name;
+  } catch(err) {
+    toast(err.message, 'error');
+  }
+}
+
+(async() => {
+  await requireRole('company');
+  loadHome();
+})();
+</script>
+</body>
+</html>

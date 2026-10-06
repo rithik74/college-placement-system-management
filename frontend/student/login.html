@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Student Login — CPMS</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    .login-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 440px;
+      z-index: 10;
+    }
+    .portal-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      backdrop-filter: blur(10px);
+      transition: var(--transition);
+    }
+    .portal-back-link:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="login-page">
+  <div class="login-glow-bg" style="top: 15%; left: 20%; background: #10b981;"></div>
+  <div class="login-glow-bg" style="bottom: 15%; right: 20%; background: #06b6d4;"></div>
+
+  <div class="login-wrapper">
+    <a href="/" class="portal-back-link">
+      <span>←</span> Back to Main Portal
+    </a>
+
+    <div class="login-card">
+      <div class="login-logo" style="background: var(--student-gradient); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);">
+        👨‍🎓
+      </div>
+      <h1 class="login-title">Student Portal</h1>
+      <p class="login-sub">Access drive announcements, applications &amp; offers</p>
+
+      <form id="form">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="email">Student Email Address</label>
+          <div class="input-with-icon">
+            <span class="input-icon">✉️</span>
+            <input id="email" type="email" placeholder="student@college.edu.in" required autofocus/>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label for="password">Password</label>
+          </div>
+          <div class="input-with-icon">
+            <span class="input-icon">🔒</span>
+            <input id="password" type="password" placeholder="Enter your password" required/>
+            <button type="button" class="pwd-toggle" id="toggle-pwd" title="Show/hide password">👁️</button>
+          </div>
+        </div>
+
+        <button id="btn" type="submit" class="btn btn-success" style="width: 100%; padding: 12px; font-size: 14px;">
+          <span>Sign In as Student</span>
+          <span style="font-size: 16px;">→</span>
+        </button>
+      </form>
+
+      <div style="margin-top: 24px; text-align: center; border-top: 1px solid var(--border); padding-top: 16px;">
+        <span style="font-size: 13px; color: var(--text-secondary);">
+          New student? <a href="/student/register" style="color: var(--success); font-weight: 600;">Create an account</a>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  // Password reveal toggle
+  const pwdToggle = document.getElementById('toggle-pwd');
+  const pwdInput = document.getElementById('password');
+  pwdToggle.addEventListener('click', () => {
+    const isPwd = pwdInput.type === 'password';
+    pwdInput.type = isPwd ? 'text' : 'password';
+    pwdToggle.textContent = isPwd ? '🙈' : '👁️';
+  });
+
+  document.getElementById('form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span>Signing in…</span>';
+    btn.disabled = true;
+
+    try {
+      await API.post('/api/auth/student/login', {
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value
+      });
+      window.location.href = '/student/dashboard';
+    } catch(err) {
+      toast(err.message, 'error');
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
